@@ -1,23 +1,20 @@
 pipeline {
     agent any
     stages {
-        stage("Build") {
+        stage('Build') {
             steps {
-                script {
-                    echo 'Build: Running build automation'
-                    sh './gradlew build --no-daemon'
-                    echo 'Build: Archiving build artifacts'
-                    archiveArtifacts artifacts: 'dist/trainSchedule.zip', fingerprint: 'true'
-                }
+                echo 'Running build automation'
+                sh './gradlew build --no-daemon'
+                archiveArtifacts artifacts: 'dist/trainSchedule.zip', fingerprint: 'true'
             }
         }
-        stage("DeployToStaging") {
+        stage('DeployToStaging') {
             when {
                 branch 'master'
             }
             steps {
-                withCredentials {[usernamePassword(credentialsId: 'webserver_login', usernameVariable: 'USERNAME', passwordVariable: 'USERPASS')]
-                    sshPublisher {
+                withCredentials([usernamePassword(credentialsId: 'webserver_login', usernameVariable: 'USERNAME', passwordVariable: 'USERPASS')]) {
+                    sshPublisher(
                         failOnError: true,
                         continueOnError: false,
                         publishers: [
@@ -26,7 +23,7 @@ pipeline {
                                 sshCredentials: [
                                     username: "$USERNAME",
                                     encryptedPassphrase: "$USERPASS"
-                                ],
+                                ], 
                                 transfers: [
                                     sshTransfer(
                                         sourceFiles: 'dist/trainSchedule.zip',
@@ -37,7 +34,7 @@ pipeline {
                                 ]
                             )
                         ]
-                    }
+                    )
                 }
             }
         }
