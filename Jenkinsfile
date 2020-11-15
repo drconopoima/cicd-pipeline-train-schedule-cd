@@ -9,9 +9,6 @@ pipeline {
             }
         }
         stage('DeployToStaging') {
-            when {
-                branch 'master'
-            }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'webserver_login', usernameVariable: 'USERNAME', passwordVariable: 'USERPASS')]) {
                     sshPublisher(
@@ -39,9 +36,6 @@ pipeline {
             }
         }
         stage('DeployToProduction') {
-            when {
-                branch 'master'
-            }
             steps {
                 input 'Does the staging environment look OK?'
                 milestone(1)
